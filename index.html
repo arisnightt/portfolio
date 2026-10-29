@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>ArisNight</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./css/style.css">
+  </head>
+  <body>
+    <div class="app" id="app">
+      <aside class="side">
+        <div class="top">
+          <div class="logo">
+            <i></i>
+            <em style="font-style:normal">ArisNight</em>
+          </div>
+          <button class="toggle" id="toggle" aria-label="Свернуть меню">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <path d="M9 3v18M15 9l-3 3 3 3"/>
+            </svg>
+          </button>
+        </div>
+        <nav class="nav" id="nav">
+          <a href="#home" class="on">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"/>
+              <path d="M9.5 16.5h5"/>
+            </svg>
+            <span>Главная</span>
+          </a>
+          <a href="#projects">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3.5" y="4" width="17" height="16" rx="3"/>
+              <path d="M3.5 9h17M8 14h3"/>
+            </svg>
+            <span>Проекты</span>
+          </a>
+          <a href="#about">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="4"/>
+              <path d="M4 20c1-4 4-6 8-6s7 2 8 6"/>
+            </svg>
+            <span>Обо мне</span>
+          </a>
+          <a href="#skills">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 4v16h16"/>
+              <path d="m8 15 4-4 3 3 5-6"/>
+            </svg>
+            <span>Навыки</span>
+          </a>
+        </nav>
+        <div class="side-contact" role="group" aria-labelledby="contact-title">
+          <h3 id="contact-title">Контакты</h3>
+          <div class="side-social">
+            <a href="https://t.me/arisnight" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.8 2.2a1.7 1.7 0 0 0-1.7-.3L2.4 8.7c-1.4.5-1.4 1.3-.2 1.7l4.6 1.4 1.8 5.7c.2.6.1.8.7.8.5 0 .7-.2 1-.5l2.2-2.1 4.6 3.4c.9.5 1.6.2 1.8-.9l3-14.2c.2-.8-.1-1.4-.1-1.8ZM8.1 11.5l9-5.7c.4-.3.8-.1.5.2l-7.5 6.8-.3 3.2-1.7-4.5Z"/></svg>
+              <span>Telegram</span>
+            </a>
+            <a href="https://discord.gg/hxNy9haxj" target="_blank" rel="noopener" aria-label="Discord" title="Discord">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19.7 5.1a18 18 0 0 0-4.4-1.4l-.6 1.2a16.5 16.5 0 0 0-5.4 0l-.6-1.2a18 18 0 0 0-4.4 1.4C1.5 9.2.7 13.2 1.1 17.2a18 18 0 0 0 5.4 2.7l1.2-2a11 11 0 0 1-1.9-.9l.5-.4a12.8 12.8 0 0 0 11.4 0l.5.4a11 11 0 0 1-1.9.9l1.2 2a18 18 0 0 0 5.4-2.7c.5-4.7-.8-8.7-3.2-12.1ZM8.7 14.8c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm6.6 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/></svg>
+              <span>Discord</span>
+            </a>
+            <a href="https://github.com/arisnightt" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .9a11.1 11.1 0 0 0-3.5 21.6c.6.1.8-.3.8-.6v-2.1c-3.1.7-3.8-1.3-3.8-1.3-.5-1.3-1.3-1.6-1.3-1.6-1-.7.1-.7.1-.7 1.1.1 1.7 1.1 1.7 1.1 1 .1.7 2.2 3.4 1.5.1-.7.4-1.2.7-1.5-2.5-.3-5.2-1.3-5.2-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.2 5.7.4.3.8 1 .8 2v3c0 .3.2.7.8.6A11.1 11.1 0 0 0 12 .9Z"/></svg>
+              <span>GitHub</span>
+            </a>
+          </div>
+        </div>
+      </aside>
+
+      <main class="panel">
+        <header class="ph">
+          <h2 id="title">Главная</h2>
+          <div class="ph-r">
+            <button class="lang" id="lang" role="switch" aria-checked="false" aria-label="Язык / Language">
+              <span>RU</span>
+              <span>EN</span>
+              <i></i>
+            </button>
+            <span class="pill">Java и Python</span>
+          </div>
+        </header>
+        <div class="scroll" id="scroll">
+          <section id="home" data-t="Главная">
+            <div class="hero">
+              <h1>Пишу на Java и Python: приложения, боты и моды</h1>
+              <p>Я ArisNight. Делаю десктопные программы на JavaFX, ботов для Discord и Telegram, плагины и моды для Minecraft. Сейчас развиваю KeyStash — локальный менеджер паролей.</p>
+              <div class="cta">
+                <a class="btn p" href="#projects">Смотреть проекты</a>
+                <a class="btn s" href="https://t.me/arisnight" target="_blank" rel="noopener">Связаться</a>
+              </div>
+            </div>
+            <div class="stats">
+              <div class="stat">
+                <b data-n="7">0</b>
+                <span>технологий в стеке</span>
+              </div>
+              <div class="stat">
+                <b>0</b>
+                <span>проектов</span>
+              </div>
+              <div class="stat">
+                <b data-n="2">0</b>
+                <span>сообщества</span>
+              </div>
+            </div>
+          </section>
+
+          <section id="projects" data-t="Проекты">
+            <h3>Проекты</h3>
+            <div class="chips" id="project-filters" role="group" aria-label="Фильтр проектов"></div>
+            <div class="grid" id="project-grid" aria-live="polite">
+              <p class="project-message">Загружаю проекты…</p>
+            </div>
+          </section>
+
+          <section id="about" data-t="Обо мне">
+            <h3>Обо мне</h3>
+            <div class="two">
+              <div class="box">
+                <p>Пишу на Java и Python. Делаю десктопные приложения на JavaFX, ботов для Discord и Telegram, а также плагины и моды для Minecraft.</p>
+                <p>Сейчас изучаю JavaScript, чтобы делать не только программы и ботов, но и интерфейсы для веба.</p>
+              </div>
+              <div class="box">
+                <p><b>Сейчас</b><br>Развиваю KeyStash</p>
+                <p><b>Изучаю</b><br>JavaScript</p>
+                <p><b>Сообщества</b><br>Telegram-канал и Discord-сервер</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="skills" data-t="Навыки">
+            <h3>Стек</h3>
+            <div class="box">
+              <div class="sk">
+                <h5 style="font-size:.9375rem;font-weight:500">Java</h5>
+                <p class="tags">
+                  <span>Java</span>
+                  <span>JavaFX</span>
+                  <span>Java Discord API</span>
+                </p>
+              </div>
+              <div class="sk">
+                <h5 style="font-size:.9375rem;font-weight:500">Python</h5>
+                <p class="tags">
+                  <span>Python</span>
+                  <span>Aiogram 3</span>
+                </p>
+              </div>
+              <div class="sk">
+                <h5 style="font-size:.9375rem;font-weight:500">Веб</h5>
+                <p class="tags">
+                  <span>HTML</span>
+                  <span>CSS</span>
+                  <span>JavaScript (изучаю)</span>
+                </p>
+              </div>
+              <div class="sk">
+                <h5 style="font-size:.9375rem;font-weight:500">Minecraft</h5>
+                <p class="tags">
+                  <span>Paper</span>
+                  <span>Folia</span>
+                  <span>Bukkit</span>
+                  <span>Purpur</span>
+                  <span>Fabric</span>
+                  <span>NeoForge</span>
+                </p>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </main>
+      <footer class="side-footer">
+        <button class="admin-trigger nav-admin-trigger" id="admin-open" type="button">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 20c1-4 4-6 8-6"/>
+            <path d="M17 14.5 21 16v3c0 1.5-1.6 2.8-4 3.5-2.4-.7-4-2-4-3.5v-3z"/>
+          </svg>
+          <span>Админ-панель</span>
+        </button>
+        <div class="foot">© 2026 ArisNight</div>
+      </footer>
+    </div>
+
+    <script type="module" src="./js/bootstrap.js"></script>
+  </body>
+</html>

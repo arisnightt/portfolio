@@ -1,0 +1,112 @@
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <div class="dlg-top">
+    <button class="dlg-x" id="dlg-x" aria-label="Закрыть">×</button>
+    <div class="shot" id="dlg-shot">
+      <i></i>
+      <i></i>
+      <i></i>
+    </div>
+  </div>
+  <div class="dlg-body">
+    <h3 id="dlg-t"></h3>
+    <p id="dlg-d"></p>
+    <div class="tags" id="dlg-tags"></div>
+  </div>
+  <div class="dlg-foot">
+    <small id="dlg-u"></small>
+    <a class="btn p" id="dlg-a" target="_blank" rel="noopener">Открыть проект</a>
+  </div>
+</dialog>
+<dialog id="admin-dialog" class="admin-dialog" aria-labelledby="admin-title">
+  <div class="admin-header">
+    <h2 id="admin-title">Админ-панель</h2>
+    <button class="dlg-x" id="admin-close" type="button" aria-label="Закрыть">×</button>
+  </div>
+  <div class="admin-content">
+    <form id="login-form" class="admin-form">
+      <h3>Вход в аккаунт</h3>
+      <label for="login-username">Логин</label>
+      <input id="login-username" name="username" autocomplete="username" required maxlength="32">
+      <label for="login-password">Пароль</label>
+      <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn p" type="submit">Войти</button>
+    </form>
+
+    <div id="admin-dashboard" hidden>
+      <div class="admin-toolbar">
+        <h3>Проекты</h3>
+        <div>
+          <button class="btn s" id="add-project" type="button">Добавить проект</button>
+          <button class="btn s" id="logout" type="button">Выйти</button>
+        </div>
+      </div>
+      <div id="admin-projects" class="admin-projects"></div>
+    </div>
+    <p id="admin-message" class="admin-message" role="status" aria-live="polite"></p>
+  </div>
+</dialog>
+<dialog id="project-dialog" class="admin-dialog" aria-labelledby="project-form-title">
+  <div class="admin-header">
+    <h2 id="project-form-title">Новый проект</h2>
+    <button class="dlg-x" id="project-close" type="button" aria-label="Закрыть">×</button>
+  </div>
+  <div class="admin-content">
+    <form id="project-form" class="admin-form">
+      <input id="project-id" type="hidden">
+      <label for="project-name">Название</label>
+      <input id="project-name" required maxlength="80">
+      <label for="project-description">Описание на русском</label>
+      <textarea id="project-description" required maxlength="2000" rows="4"></textarea>
+      <label for="project-description-en">Описание на английском</label>
+      <textarea id="project-description-en" required maxlength="2000" rows="4"></textarea>
+      <label for="project-url">Ссылка</label>
+      <input id="project-url" type="url" required maxlength="500" placeholder="https://example.com">
+      <label for="project-color">Цвет карточки</label>
+      <div class="color-field">
+        <button id="project-color-swatch" class="color-swatch" type="button" aria-label="Открыть выбор цвета"></button>
+        <input id="project-color" name="color" type="text" value="#1ed760" pattern="#[0-9A-Fa-f]{6}" maxlength="7" required autocomplete="off" spellcheck="false" aria-describedby="project-color-hint">
+        <span id="project-color-hint" class="sr-only">Введите HEX-код в формате #RRGGBB</span>
+      </div>
+      <label for="project-tags">Теги (через запятую)</label>
+      <input id="project-tags" required maxlength="800" placeholder="Java, Windows, Linux">
+      <div class="admin-form-actions">
+        <button class="btn p" type="submit">Сохранить</button>
+        <button class="btn s" id="cancel-project" type="button">Отмена</button>
+      </div>
+    </form>
+    <p id="project-message" class="admin-message" role="status" aria-live="polite"></p>
+  </div>
+</dialog>
+<dialog id="color-dialog" class="color-dialog" aria-labelledby="color-dialog-title">
+  <div class="admin-header">
+    <h2 id="color-dialog-title">Выбор цвета</h2>
+    <button class="dlg-x" id="color-close" type="button" aria-label="Закрыть">×</button>
+  </div>
+  <div class="color-picker-content">
+    <div class="color-picker-board">
+      <div id="color-plane" class="color-plane" role="slider" tabindex="0" aria-label="Насыщенность и яркость" aria-valuemin="0" aria-valuemax="100">
+        <span id="color-plane-cursor" class="color-plane-cursor"></span>
+      </div>
+      <input id="color-hue" class="color-hue" type="range" min="0" max="360" value="130" aria-label="Оттенок">
+    </div>
+    <div class="color-picker-fields">
+      <span id="color-preview" class="color-preview" aria-hidden="true"></span>
+      <label for="color-hex">HEX</label>
+      <input id="color-hex" type="text" value="#1ED760" pattern="#[0-9A-Fa-f]{6}" maxlength="7" autocomplete="off" spellcheck="false" aria-label="HEX-код цвета">
+    </div>
+    <div class="color-picker-actions">
+      <button id="color-cancel" class="btn s" type="button">Отмена</button>
+      <button id="color-apply" class="btn p" type="button">Выбрать</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="delete-confirm-dialog" class="confirm-dialog" aria-labelledby="delete-confirm-title" aria-describedby="delete-confirm-message">
+  <div class="confirm-content">
+    <h2 id="delete-confirm-title">Удалить проект?</h2>
+    <p id="delete-confirm-message">Вы уверены, что хотите удалить проект?</p>
+    <form method="dialog" class="confirm-actions">
+      <button class="btn s" type="submit" value="cancel">Отмена</button>
+      <button class="btn danger" type="submit" value="confirm">Удалить</button>
+    </form>
+  </div>
+</dialog>
