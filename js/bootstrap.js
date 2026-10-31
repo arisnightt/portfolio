@@ -1,5 +1,5 @@
 try {
-  const response = await fetch('./modals.html');
+  const response = await fetch('./modals.html', { cache: 'no-store' });
   if (!response.ok) throw new Error('modals_request_failed');
 
   document.body.insertAdjacentHTML('beforeend', await response.text());

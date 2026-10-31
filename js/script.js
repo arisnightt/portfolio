@@ -31,6 +31,16 @@ $('#toggle').onclick = () => {
   } catch (e) {}
 };
 
+document.addEventListener('keydown', event => {
+  if (!event.ctrlKey || event.altKey || event.shiftKey || event.repeat || event.key.toLowerCase() !== 'b') return;
+  if (event.target instanceof Element && (
+    event.target.matches('input, textarea, select') || event.target.isContentEditable
+  )) return;
+
+  event.preventDefault();
+  $('#toggle').click();
+});
+
 // nav click -> smooth scroll inside panel
 links.forEach(a => a.addEventListener('click', e => {
   e.preventDefault();
@@ -155,6 +165,83 @@ async function loadProjects() {
 
 window.loadProjects = loadProjects;
 
+const videoGrid = $('#video-grid');
+
+function formatVideoDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const locale = i18n.language === 'en' ? 'en-GB' : 'ru-RU';
+  return date.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+}
+
+function renderVideo(video) {
+  const card = document.createElement('a');
+  card.className = 'video';
+  card.href = video.url;
+  card.target = '_blank';
+  card.rel = 'noopener';
+
+  const thumb = document.createElement('div');
+  thumb.className = 'vthumb';
+  const img = document.createElement('img');
+  img.src = video.thumbnail;
+  img.alt = '';
+  img.loading = 'lazy';
+  img.referrerPolicy = 'no-referrer';
+  img.onerror = () => {
+    if (img.dataset.fallback !== '1') {
+      img.dataset.fallback = '1';
+      img.src = video.thumbnail_fallback;
+    }
+  };
+  const play = document.createElement('span');
+  play.className = 'vplay';
+  play.setAttribute('aria-hidden', 'true');
+  thumb.append(img, play);
+
+  const info = document.createElement('div');
+  info.className = 'vm';
+  const title = document.createElement('h4');
+  title.textContent = video.title;
+  const date = document.createElement('time');
+  date.dateTime = video.published;
+  date.textContent = formatVideoDate(video.published);
+  info.append(title, date);
+
+  card.append(thumb, info);
+  return card;
+}
+
+async function loadVideos() {
+  try {
+    const response = await fetch('/api/videos');
+    if (!response.ok) throw new Error('request_failed');
+    const { videos } = await response.json();
+    if (!videos.length) {
+      const message = document.createElement('p');
+      message.className = 'project-message';
+      message.setAttribute('role', 'status');
+      message.textContent = i18n.text('Ничего не найдено');
+      videoGrid.replaceChildren(message);
+      return;
+    }
+    videoGrid.replaceChildren(...videos.map(renderVideo));
+  } catch {
+    const message = document.createElement('p');
+    message.className = 'project-message';
+    message.setAttribute('role', 'alert');
+    message.textContent = i18n.text('Не удалось загрузить видео. Убедитесь, что сервер запущен.');
+    videoGrid.replaceChildren(message);
+  }
+}
+
+window.loadVideos = loadVideos;
+
 projectGrid.addEventListener('click', event => {
   const card = event.target.closest('.proj');
   if (card) openProject(card);
@@ -256,3 +343,4 @@ const io = new IntersectionObserver(es => es.forEach(e => {
 $$('#home,#skills').forEach(s => io.observe(s));
 
 loadProjects();
+loadVideos();

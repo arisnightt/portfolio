@@ -5,8 +5,10 @@ import json
 import os
 import re
 import secrets
+import socket
 import sqlite3
 import sys
+import threading
 import time
 from contextlib import contextmanager
 from http import HTTPStatus
@@ -16,15 +18,39 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 
+def _load_env_file(path: Path) -> None:
+    """Загружает KEY=VALUE из файла .env, не перетирая уже заданные переменные."""
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+# Грузим .env до import youtube: модуль читает YOUTUBE_CACHE_TTL при импорте.
+_load_env_file(Path(__file__).resolve().parent / ".env")
+
+import youtube
+
+
 ROOT = Path(__file__).resolve().parent
 DATABASE = Path(os.environ.get("DATABASE_PATH", ROOT / "data" / "projects.sqlite3"))
+YOUTUBE_CHANNEL = os.environ.get("YOUTUBE_CHANNEL", "https://www.youtube.com/@arisnightt")
 SESSION_COOKIE = "admin_session"
 SESSION_TTL = 60 * 60 * 12
 PASSWORD_ITERATIONS = 310_000
 MAX_REQUEST_SIZE = 64 * 1024
+REQUEST_TIMEOUT = 30
 LOGIN_LIMIT = 5
 LOGIN_WINDOW = 15 * 60
 LOGIN_ATTEMPTS = {}
+LOGIN_LOCK = threading.Lock()
 
 INITIAL_PROJECTS = (
     {
@@ -166,6 +192,18 @@ def create_admin():
     print("Admin account created.")
 
 
+def _reject_bidi_controls(value):
+    """Запрещает невидимые/bidi-символы, которыми можно подменить отображение."""
+    if any(
+        0x200B <= ord(ch) <= 0x200F
+        or 0x202A <= ord(ch) <= 0x202E
+        or 0x2066 <= ord(ch) <= 0x2069
+        or ord(ch) == 0xFEFF
+        for ch in value
+    ):
+        raise ValueError("invalid_project")
+
+
 def sanitize_text(value, *, max_length, allow_newlines=False):
     if not isinstance(value, str):
         raise ValueError("invalid_project")
@@ -176,6 +214,8 @@ def sanitize_text(value, *, max_length, allow_newlines=False):
 
     if any(ord(ch) < 32 and (not allow_newlines or ch not in "\n\r\t") for ch in cleaned):
         raise ValueError("invalid_project")
+
+    _reject_bidi_controls(cleaned)
 
     if re.search(r"<\s*(script|iframe|object|embed|svg|img|style|link|meta|base|form|button|input)\b", cleaned, re.IGNORECASE):
         raise ValueError("invalid_project")
@@ -195,6 +235,8 @@ def sanitize_url(value):
         raise ValueError("invalid_project")
     if re.search(r"(?:javascript|data|vbscript)\s*:", url, re.IGNORECASE):
         raise ValueError("invalid_project")
+
+    _reject_bidi_controls(url)
 
     try:
         parsed_url = urlsplit(url)
@@ -254,14 +296,35 @@ class PortfolioHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
+    def setup(self):
+        super().setup()
+        # Таймаут сокета защищает от «медленных» клиентов (slowloris).
+        self.connection.settimeout(REQUEST_TIMEOUT)
+
+    def handle(self):
+        try:
+            super().handle()
+        except (socket.timeout, ConnectionError):
+            # Клиент оборвал соединение или не прислал данные — просто закрываем.
+            pass
+
+    def client_ip(self):
+        """IP клиента; за доверенным прокси берётся X-Forwarded-For."""
+        if os.environ.get("TRUST_PROXY") == "1":
+            forwarded = self.headers.get("X-Forwarded-For")
+            if forwarded:
+                return forwarded.split(",")[0].strip()
+        return self.client_address[0]
+
     def end_headers(self):
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
         self.send_header("X-Frame-Options", "DENY")
         self.send_header(
             "Content-Security-Policy",
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-            "img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; "
+            "default-src 'self'; script-src 'self'; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "img-src 'self' data: https://i.ytimg.com; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; object-src 'none'; "
             "base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
         )
         super().end_headers()
@@ -300,7 +363,7 @@ class PortfolioHandler(SimpleHTTPRequestHandler):
             raise ValueError("invalid_json")
         try:
             value = json.loads(self.rfile.read(length))
-        except (json.JSONDecodeError, UnicodeDecodeError):
+        except (json.JSONDecodeError, UnicodeDecodeError, OSError):
             raise ValueError("invalid_json")
         if not isinstance(value, dict):
             raise ValueError("invalid_json")
@@ -367,6 +430,14 @@ class PortfolioHandler(SimpleHTTPRequestHandler):
                     for row in rows
                 ],
             )
+            return
+        if path == "/api/videos":
+            try:
+                videos = youtube.fetch_latest_videos(YOUTUBE_CHANNEL, limit=5)
+            except Exception as error:  # noqa: BLE001 — сеть/парсинг: деградируем до пустого списка
+                print(f"[youtube] {error}", file=sys.stderr)
+                videos = []
+            self.send_json(HTTPStatus.OK, {"videos": videos})
             return
         if path == "/api/session":
             admin = self.session_admin()
@@ -471,18 +542,7 @@ class PortfolioHandler(SimpleHTTPRequestHandler):
             return
 
         now = time.time()
-        address = self.client_address[0]
-        for client, stamps in list(LOGIN_ATTEMPTS.items()):
-            active = [stamp for stamp in stamps if now - stamp < LOGIN_WINDOW]
-            if active:
-                LOGIN_ATTEMPTS[client] = active
-            else:
-                LOGIN_ATTEMPTS.pop(client, None)
-        attempts = [stamp for stamp in LOGIN_ATTEMPTS.get(address, []) if now - stamp < LOGIN_WINDOW]
-        if len(attempts) >= LOGIN_LIMIT:
-            LOGIN_ATTEMPTS[address] = attempts
-            self.send_error_json(HTTPStatus.TOO_MANY_REQUESTS, "rate_limited")
-            return
+        address = self.client_ip()
 
         try:
             payload = self.read_json()
@@ -500,27 +560,50 @@ class PortfolioHandler(SimpleHTTPRequestHandler):
             self.send_error_json(HTTPStatus.BAD_REQUEST, "invalid_credentials")
             return
 
+        # Резервируем попытку до PBKDF2, чтобы параллельные запросы не могли
+        # обойти лимит. Вся работа с LOGIN_ATTEMPTS — под блокировкой.
+        with LOGIN_LOCK:
+            for client, stamps in list(LOGIN_ATTEMPTS.items()):
+                active = [stamp for stamp in stamps if now - stamp < LOGIN_WINDOW]
+                if active:
+                    LOGIN_ATTEMPTS[client] = active
+                else:
+                    LOGIN_ATTEMPTS.pop(client, None)
+            attempts = [stamp for stamp in LOGIN_ATTEMPTS.get(address, []) if now - stamp < LOGIN_WINDOW]
+            if len(attempts) >= LOGIN_LIMIT:
+                LOGIN_ATTEMPTS[address] = attempts
+                self.send_error_json(HTTPStatus.TOO_MANY_REQUESTS, "rate_limited")
+                return
+            LOGIN_ATTEMPTS[address] = attempts + [now]
+
         with db_connection() as connection:
             admin = connection.execute(
                 "SELECT id, password_hash, password_salt, password_iterations FROM admins WHERE username = ?",
                 (username.strip(),),
             ).fetchone()
 
-        valid = False
         if admin:
             salt = bytes.fromhex(admin["password_salt"])
-            digest = hashlib.pbkdf2_hmac(
-                "sha256", password.encode("utf-8"), salt, admin["password_iterations"]
-            ).hex()
-            valid = hmac.compare_digest(digest, admin["password_hash"])
+            iterations = admin["password_iterations"]
+            password_hash = admin["password_hash"]
+        else:
+            # Несуществующий пользователь: считаем на фейковых данных, чтобы
+            # время ответа не раскрывало существование логина.
+            salt = bytes(16)
+            iterations = PASSWORD_ITERATIONS
+            password_hash = ""
+
+        digest = hashlib.pbkdf2_hmac(
+            "sha256", password.encode("utf-8"), salt, iterations
+        ).hex()
+        valid = bool(admin) and hmac.compare_digest(digest, password_hash)
 
         if not valid:
-            attempts.append(now)
-            LOGIN_ATTEMPTS[address] = attempts
             self.send_error_json(HTTPStatus.UNAUTHORIZED, "invalid_credentials")
             return
 
-        LOGIN_ATTEMPTS.pop(address, None)
+        with LOGIN_LOCK:
+            LOGIN_ATTEMPTS.pop(address, None)
         token = secrets.token_urlsafe(32)
         token_hash = hashlib.sha256(token.encode("ascii")).hexdigest()
         expires_at = int(now) + SESSION_TTL
@@ -580,8 +663,13 @@ class PortfolioHandler(SimpleHTTPRequestHandler):
 def run_server():
     initialize_database()
     host = os.environ.get("HOST", "127.0.0.1")
-    port = int(os.environ.get("PORT", "8000"))
+    try:
+        port = int(os.environ.get("PORT", "8000"))
+    except ValueError:
+        print("PORT должен быть числом. Использую 8000.", file=sys.stderr)
+        port = 8000
     server = ThreadingHTTPServer((host, port), PortfolioHandler)
+    server.daemon_threads = True
     print(f"Portfolio server listening at http://{host}:{port}")
     try:
         server.serve_forever()

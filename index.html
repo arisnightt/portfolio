@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>ArisNight</title>
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./css/style.css">
   </head>
@@ -37,6 +36,13 @@
               <path d="M3.5 9h17M8 14h3"/>
             </svg>
             <span>Проекты</span>
+          </a>
+          <a href="#videos">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3.5" y="5.5" width="17" height="13" rx="3"/>
+              <path d="m10.5 9.5 4 2.5-4 2.5z"/>
+            </svg>
+            <span>Видео</span>
           </a>
           <a href="#about">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
@@ -118,6 +124,13 @@
             </div>
           </section>
 
+          <section id="videos" data-t="Видео">
+            <h3>Видео</h3>
+            <div class="videos" id="video-grid" aria-live="polite">
+              <p class="project-message">Загружаю видео…</p>
+            </div>
+          </section>
+
           <section id="about" data-t="Обо мне">
             <h3>Обо мне</h3>
             <div class="two">
@@ -188,6 +201,6 @@
       </footer>
     </div>
 
-    <script type="module" src="./js/bootstrap.js"></script>
+    <script type="module" src="./js/bootstrap.js?v=2fa"></script>
   </body>
 </html>

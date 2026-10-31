@@ -1,0 +1,61 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8000
+      DATABASE_PATH: /app/data/projects.sqlite3
+      TRUST_PROXY: "1"
+      COOKIE_SECURE: "1"
+      YOUTUBE_CHANNEL: https://www.youtube.com/@arisnightt
+      YOUTUBE_CACHE_TTL: ${YOUTUBE_CACHE_TTL:-60}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+    volumes:
+      - portfolio_data:/app/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/projects', timeout=2)"
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    command:
+      - /bin/sh
+      - /usr/local/bin/start-nginx.sh
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/http.conf:/opt/nginx-templates/http.conf:ro
+      - ./nginx/https.conf:/opt/nginx-templates/https.conf:ro
+      - ./nginx/start.sh:/usr/local/bin/start-nginx.sh:ro
+      - certbot_webroot:/var/www/certbot:ro
+      - letsencrypt:/etc/letsencrypt:ro
+
+  certbot:
+    image: certbot/certbot:latest
+    profiles:
+      - certbot
+    entrypoint:
+      - certbot
+    volumes:
+      - certbot_webroot:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+
+volumes:
+  portfolio_data:
+  certbot_webroot:
+  letsencrypt:

@@ -32,7 +32,9 @@
   }
 
   function hexToHsv(hex) {
-    const { red, green, blue } = parseHex(hex);
+    const parsed = parseHex(hex);
+    if (!parsed) return null;
+    const { red, green, blue } = parsed;
     const maximum = Math.max(red, green, blue);
     const minimum = Math.min(red, green, blue);
     const difference = maximum - minimum;
