@@ -18,6 +18,7 @@ RUN groupadd --system app \
 COPY --chown=app:app server.py youtube.py index.html modals.html ./
 COPY --chown=app:app css ./css
 COPY --chown=app:app js ./js
+COPY --chown=app:app assets ./assets
 
 USER app
 

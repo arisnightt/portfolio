@@ -31,6 +31,12 @@ $('#toggle').onclick = () => {
   } catch (e) {}
 };
 
+const mobileMenuToggle = $('#mobile-menu-toggle');
+mobileMenuToggle.onclick = () => {
+  const isOpen = $('.side').classList.toggle('menu-open');
+  mobileMenuToggle.setAttribute('aria-expanded', String(isOpen));
+};
+
 document.addEventListener('keydown', event => {
   if (!event.ctrlKey || event.altKey || event.shiftKey || event.repeat || event.key.toLowerCase() !== 'b') return;
   if (event.target instanceof Element && (
@@ -48,7 +54,11 @@ links.forEach(a => a.addEventListener('click', e => {
   if (!t) return;
 
   const mobile = matchMedia('(max-width:820px)').matches;
-  if (mobile) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (mobile) {
+    t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    $('.side').classList.remove('menu-open');
+    mobileMenuToggle.setAttribute('aria-expanded', 'false');
+  }
   else scroll.scrollTo({
     top: scroll.scrollTop + t.getBoundingClientRect().top - scroll.getBoundingClientRect().top - 28,
     behavior: 'smooth'

@@ -238,7 +238,7 @@
   function beginAdd() {
     projectForm.reset();
     $('#project-id').value = '';
-    colorInput.value = '#1ed760';
+    colorInput.value = '#6650E8';
     updateColorSwatch();
     $('#project-form-title').textContent = i18n.text('Новый проект');
     openProjectEditor();
@@ -254,7 +254,7 @@
   $('#admin-close').addEventListener('click', () => dialog.close());
   $('#project-close').addEventListener('click', () => projectDialog.close());
   colorSwatch.addEventListener('click', () => {
-    if (!setPickerFromHex(colorInput.value)) setPickerFromHex('#1ed760');
+    if (!setPickerFromHex(colorInput.value)) setPickerFromHex('#6650E8');
     colorDialog.showModal();
   });
   colorInput.addEventListener('input', updateColorSwatch);

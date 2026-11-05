@@ -57,7 +57,7 @@ INITIAL_PROJECTS = (
         "name": "KeyStash",
         "description": "Локальный и безопасный менеджер паролей для Windows и Linux. Пароли не уходят в облако, а исходный код проекта открыт на GitHub.",
         "url": "https://github.com/arisnightt/KeyStash",
-        "color": "#1ed760",
+        "color": "#6650E8",
         "tags": ["Java", "Windows", "Linux"],
     },
     {
@@ -458,7 +458,7 @@ class PortfolioHandler(SimpleHTTPRequestHandler):
             requested == ROOT / "index.html"
             or requested == ROOT / "favicon.svg"
             or requested == ROOT / "modals.html"
-            or requested.parent in (ROOT / "css", ROOT / "js")
+            or requested.parent in (ROOT / "css", ROOT / "js", ROOT / "assets")
         )
         if not allowed or not requested.is_file() or not requested.is_relative_to(ROOT):
             self.send_error(HTTPStatus.NOT_FOUND)
